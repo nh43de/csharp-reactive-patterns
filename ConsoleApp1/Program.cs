@@ -17,11 +17,10 @@ namespace ReactivePatterns.Console
             //First wait - you will not see any logging to console
             await Task.Delay(TimeSpan.FromSeconds(5));
 
-            var tradeListener = new TradeListener();
+            var feed = CreateObservable();
 
             //listen for data
-            var subscription = tradeListener
-                .DataFeed
+            var subscription = feed
                 .Subscribe(p => { System.Console.WriteLine("Got a new " + p); });
 
             await Task.Delay(TimeSpan.FromSeconds(7));
@@ -34,8 +33,7 @@ namespace ReactivePatterns.Console
             await Task.Delay(TimeSpan.FromSeconds(7));
 
             //listen for data
-            subscription = tradeListener
-                .DataFeed
+            subscription = feed
                 .Subscribe(p => { System.Console.WriteLine("Got a new2 " + p); });
 
             await Task.Delay(TimeSpan.FromSeconds(7));
@@ -47,40 +45,22 @@ namespace ReactivePatterns.Console
             
             await Task.Delay(TimeSpan.FromSeconds(6));
         }
-    }
 
-    
-    /// <summary>
-    /// Our listener... provides only start(), stop(), and the raw feed.
-    /// You can think of this class as a background service that continuously fetches data.. ie. a Websocket or manual fetching.
-    /// </summary>
-    internal class TradeListener 
-    {
-        /// <summary>
-        /// When subscribed to, we will automatically start fetching data, and when we unsubscribe our data fetching will stop.
-        /// </summary>
-        public IObservable<int> DataFeed { get; }
-
-        /// <summary>
-        /// Latest is our underlying observable.
-        /// </summary>
-        private readonly Subject<int> _latest = new Subject<int>();
-
-        private IDisposable _timer;
-
-        public TradeListener()
+        public static IObservable<int> CreateObservable()
         {
+            var tradeListener = new TradeListener();
+
             //We use .Publish() to convert our subject into a connectable observable.
             //We use .RefCount() to automatically call .OnCompleted() to signal a sequence end.
-            var feed = _latest.Publish().RefCount();
+            var feed = tradeListener.DataFeed.Publish().RefCount();
 
             //create an observable that is a subscription to our listener's observable
-            DataFeed = Observable
+            var r = Observable
                 .Create<int>(observer =>
                 {
                     //when our observable is subscribed to, we start the listener and
                     //relay the listener to our sequence.
-                    Start();
+                    tradeListener.Start();
 
                     var s = feed.Subscribe(observer);
 
@@ -89,15 +69,43 @@ namespace ReactivePatterns.Console
                 .Finally(() =>
                 {
                     //stop once we receive end of the signal
-                    Stop();
+                    tradeListener.Stop();
                     //also would call dispose here to dispose any resources.
                 });
+
+            //TODO: what happens when if need to dispose TradeListener? (then dispose underlying on stop(), alternatively ? how do we guarantee that tradeListener eventually gets garbage collected?)
+            return r;
         }
+
+    }
+
+
+    
+
+
+    
+    /// <summary>
+    /// Our listener... provides only start(), stop(), and the raw feed.
+    /// You can think of this class as a background service that continuously fetches data.. ie. a Websocket or manual fetching.
+    /// </summary>
+    internal class TradeListener
+    {
+        /// <summary>
+        /// When subscribed to, we will automatically start fetching data, and when we unsubscribe our data fetching will stop.
+        /// </summary>
+        public IObservable<int> DataFeed => _latest.AsObservable();
+
+        /// <summary>
+        /// Latest is our underlying observable.
+        /// </summary>
+        private readonly Subject<int> _latest = new Subject<int>();
+
+        private IDisposable _timer;
 
         /// <summary>
         /// Start listening. This timer observable is not really necessary for our demo, a timer class would also work. We use this timer to simulate async fetches on an interval.
         /// </summary>
-        private void Start()
+        public void Start()
         {
             System.Console.WriteLine("Starting...");
 
@@ -110,7 +118,7 @@ namespace ReactivePatterns.Console
                 });
         }
 
-        private void Stop()
+        public void Stop()
         {
             _timer.Dispose();
             
