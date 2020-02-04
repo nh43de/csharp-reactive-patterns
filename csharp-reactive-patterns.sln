@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactivePatterns.Test", "UnitTestProject1\ReactivePatterns.Test.csproj", "{83EBB773-C953-4144-877D-4772B8EC2062}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactivePatterns.Console", "ConsoleApp1\ReactivePatterns.Console.csproj", "{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{83EBB773-C953-4144-877D-4772B8EC2062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83EBB773-C953-4144-877D-4772B8EC2062}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83EBB773-C953-4144-877D-4772B8EC2062}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83EBB773-C953-4144-877D-4772B8EC2062}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {305143B8-4EAA-4F9B-8724-9BD215FF5BB7}
+	EndGlobalSection
+EndGlobal
