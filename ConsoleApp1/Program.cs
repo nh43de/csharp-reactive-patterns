@@ -17,10 +17,10 @@ namespace ReactivePatterns.Console
             //First wait - you will not see any logging to console
             await Task.Delay(TimeSpan.FromSeconds(5));
 
-            var tradeBroker = new TradeBroker();
+            var tradeListener = new TradeListener();
 
             //listen for data
-            var subscription = tradeBroker
+            var subscription = tradeListener
                 .DataFeed
                 .Subscribe(p => { System.Console.WriteLine("Got a new " + p); });
 
@@ -31,11 +31,10 @@ namespace ReactivePatterns.Console
             System.Console.WriteLine("Disposing subscription");
             subscription.Dispose();
 
-
             await Task.Delay(TimeSpan.FromSeconds(7));
 
             //listen for data
-            subscription = tradeBroker
+            subscription = tradeListener
                 .DataFeed
                 .Subscribe(p => { System.Console.WriteLine("Got a new2 " + p); });
 
@@ -45,79 +44,22 @@ namespace ReactivePatterns.Console
             //This is because we used RefCount to end our observable sequence when the last observer disconnects.
             System.Console.WriteLine("Disposing subscription");
             subscription.Dispose();
-
-
-
+            
             await Task.Delay(TimeSpan.FromSeconds(6));
-
         }
     }
 
-    public class TradeBroker
+    
+    /// <summary>
+    /// Our listener... provides only start(), stop(), and the raw feed.
+    /// You can think of this class as a background service that continuously fetches data.. ie. a Websocket or manual fetching.
+    /// </summary>
+    internal class TradeListener 
     {
         /// <summary>
         /// When subscribed to, we will automatically start fetching data, and when we unsubscribe our data fetching will stop.
         /// </summary>
         public IObservable<int> DataFeed { get; }
-
-        public TradeBroker()
-        {
-            var listener = new TradeListener();
-
-            //create an observable that is a subscription to our listener's observable
-            DataFeed = Observable
-                .Create<int>(observer =>
-                {
-                    //when our observable is subscribed to, we start the listener and
-                    //relay the listener to our sequence.
-                    listener.Start();
-
-                    var s = listener.Feed.Subscribe(observer);
-
-                    return s;
-                })
-                .Finally(() =>
-                {
-                    //stop once we receive end of the signal
-                    listener.Stop();
-                    //also would call dispose here to dispose any resources.
-                });
-        }
-    }
-
-    /// <summary>
-    /// Our listener... provides only start(), stop(), and the raw feed for when there's an update.
-    /// Internal as this would not be used publicly. Users would subscribe through the broker
-    /// which handles resource management.
-    /// </summary>
-    internal interface ITradeListener
-    { 
-        /// <summary>
-        /// An observable that returns values that our listener receives.
-        /// But for our purposes it just returns an incremented int e.g. 1,2,3,4...etc. once started.
-        /// </summary>
-        IObservable<int> Feed { get; }
-
-        /// <summary>
-        /// Start fetching data.
-        /// </summary>
-        void Start();
-
-        /// <summary>
-        /// Stop fetching data.
-        /// </summary>
-        void Stop();
-    }
-
-    /// <summary>
-    /// You can think of this class as a background service that continuously fetches data.. ie. a Websocket or manual fetching.
-    /// </summary>
-    internal class TradeListener : ITradeListener
-    {
-        /// <summary>
-        /// This is our publicly available observable for consumption.
-        /// </summary>
-        public IObservable<int> Feed { get; }
 
         /// <summary>
         /// Latest is our underlying observable.
@@ -129,15 +71,33 @@ namespace ReactivePatterns.Console
         public TradeListener()
         {
             //We use .Publish() to convert our subject into a connectable observable.
-            //We use .RefCount() to automatically call .OnCompleted() to signal a sequence end. This allows 
-            Feed = _latest.Publish().RefCount();
+            //We use .RefCount() to automatically call .OnCompleted() to signal a sequence end.
+            var feed = _latest.Publish().RefCount();
 
+            //create an observable that is a subscription to our listener's observable
+            DataFeed = Observable
+                .Create<int>(observer =>
+                {
+                    //when our observable is subscribed to, we start the listener and
+                    //relay the listener to our sequence.
+                    Start();
+
+                    var s = feed.Subscribe(observer);
+
+                    return s;
+                })
+                .Finally(() =>
+                {
+                    //stop once we receive end of the signal
+                    Stop();
+                    //also would call dispose here to dispose any resources.
+                });
         }
 
         /// <summary>
         /// Start listening. This timer observable is not really necessary for our demo, a timer class would also work. We use this timer to simulate async fetches on an interval.
         /// </summary>
-        public void Start()
+        private void Start()
         {
             System.Console.WriteLine("Starting...");
 
@@ -150,7 +110,7 @@ namespace ReactivePatterns.Console
                 });
         }
 
-        public void Stop()
+        private void Stop()
         {
             _timer.Dispose();
             
