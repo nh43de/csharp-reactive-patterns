@@ -70,13 +70,12 @@ namespace ReactivePatterns.Console
                 {
                     //stop once we receive end of the signal
                     tradeListener.Stop();
-                    //also would call dispose here to dispose any resources.
+                    //stop would dispose any resources as needed
                 });
 
             //TODO: what happens when if need to dispose TradeListener? (then dispose underlying on stop(), alternatively ? how do we guarantee that tradeListener eventually gets garbage collected?)
             return r;
         }
-
     }
 
 
