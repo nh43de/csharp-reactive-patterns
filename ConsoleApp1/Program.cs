@@ -17,7 +17,7 @@ namespace ReactivePatterns
 
         public static void Run_MultiAwait()
         {
-            CustomAwaiter.Run().Wait();
+            TaskCompletionSourceTest.Run().Wait();
         }
     }
 }
