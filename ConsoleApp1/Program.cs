@@ -1,16 +1,11 @@
 ﻿using System.Threading.Tasks;
-using MyApplication;
+using Bootstrapping;
 
 namespace ReactivePatterns
 {
     public class Program
     {
-        /// <summary>
-        /// Use .Publish() and .RefCount() to provide a caching mechanism.
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             typeof(Program).Bootstrap();
         }
@@ -24,7 +19,5 @@ namespace ReactivePatterns
         {
             CustomAwaiter.Run().Wait();
         }
-
-
     }
 }

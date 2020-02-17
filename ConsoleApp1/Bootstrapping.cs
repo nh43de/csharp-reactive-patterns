@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 
-namespace MyApplication
+namespace Bootstrapping
 {
     /// <summary>
     /// Use by calling typeof(Program).Bootstrap(); in your Main() routine
     /// </summary>
-    public static class Bootstrapping
+    public static class BootstrappingExtensions
     {
         public static void Bootstrap(this Type hostType)
         {
