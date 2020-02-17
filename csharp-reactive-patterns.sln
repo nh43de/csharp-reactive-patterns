@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactivePatterns.Test", "UnitTestProject1\ReactivePatterns.Test.csproj", "{83EBB773-C953-4144-877D-4772B8EC2062}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactivePatterns.Console", "ConsoleApp1\ReactivePatterns.Console.csproj", "{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactivePatterns", "ConsoleApp1\ReactivePatterns.csproj", "{CEC91BA4-8934-484E-9A2E-7A9906FAA5FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C60C0681-FAC4-41FB-91D1-93215B089EE8}"
 	ProjectSection(SolutionItems) = preProject
