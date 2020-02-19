@@ -62,9 +62,9 @@ namespace ReactivePatterns
             await Task.Delay(TimeSpan.FromSeconds(4));
         }
 
-        public static IObservable<int> CreateObservable()
+        public static IObservable<int> CreateCachingObservable() //singleton reference
         {
-            var tradeListener = new TradeListener(); //this??
+            var tradeListener = new TradeListener(); //singleton reference
 
             //We use .Publish() to convert our subject into a connectable observable.
             //We use .RefCount() to automatically call .OnCompleted() to signal a sequence end.
