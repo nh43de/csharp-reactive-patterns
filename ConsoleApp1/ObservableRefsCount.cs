@@ -21,26 +21,26 @@ namespace ReactivePatterns
             Console.WriteLine("Starting listener 1");
             var listener1 = feed
                 .Subscribe(p => { Console.WriteLine("Listener 1:  Got a new " + p); });
-            await Task.Delay(TimeSpan.FromSeconds(7));
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             Console.WriteLine("Starting listener 2");
             var listener2 = feed
                 .Subscribe(p => { Console.WriteLine("Listener 2:  Got a new " + p); });
-            await Task.Delay(TimeSpan.FromSeconds(7));
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             Console.WriteLine("Disposing listener 1");
             listener1.Dispose();
             //disposing cancels further updates, and our underlying listener will not longer listen either
             //This is because we used RefCount to end our observable sequence when the last observer disconnects.
 
-            await Task.Delay(TimeSpan.FromSeconds(7));
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
             //listen for data
             Console.WriteLine("Starting listener 1 again");
             listener1 = feed
-                .Subscribe(p => { System.Console.WriteLine("Listener 1 (2): " + p); });
+                .Subscribe(p => { Console.WriteLine("Listener 1 (2): Got a new " + p); });
 
-            await Task.Delay(TimeSpan.FromSeconds(7));
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             //disposing cancels further updates, and our underlying listener will not longer listen either
             //This is because we used RefCount to end our observable sequence when the last observer disconnects.
@@ -48,7 +48,18 @@ namespace ReactivePatterns
             listener1.Dispose();
             listener2.Dispose();
 
-            await Task.Delay(TimeSpan.FromSeconds(6));
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            Console.WriteLine("Starting listener 1 again");
+            listener1 = feed
+                .Subscribe(p => { Console.WriteLine("Listener 1 (3): Got a new " + p); });
+
+            await Task.Delay(TimeSpan.FromSeconds(4));
+
+            Console.WriteLine("Disposing listener 1");
+            listener1.Dispose();
+
+            await Task.Delay(TimeSpan.FromSeconds(4));
         }
 
         public static IObservable<int> CreateObservable()
@@ -77,7 +88,7 @@ namespace ReactivePatterns
                     tradeListener.Stop();
                     //stop would dispose any resources as needed
                 })
-                .Publish().RefCount()
+                .Replay(1).RefCount()
                 ;
 
             //TODO: what happens when if need to dispose TradeListener? (then dispose underlying on stop(), alternatively ? how do we guarantee that tradeListener eventually gets garbage collected?)
@@ -146,8 +157,9 @@ namespace ReactivePatterns
 
                 Console.WriteLine("Fetching " + newCounter);
                 await Task.Delay(2000); //simulate a delay
-                Console.WriteLine("Fetched " + newCounter);
+                
                 _latest.OnNext(newCounter); //push our new value out
+                Console.WriteLine("Fetched " + newCounter);
             }
         }
     }
