@@ -12,47 +12,52 @@ namespace ReactivePatterns
     {
         public static async Task Run()
         {
-
-            //First wait - you will not see any logging to console
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
+            Console.WriteLine("Starting program...");
             var feed = CreateObservable();
 
+            await Task.Delay(TimeSpan.FromSeconds(3));
+
             //listen for data
-            var subscription = feed
-                .Subscribe(p => { System.Console.WriteLine("Got a new " + p); });
+            Console.WriteLine("Starting listener 1");
+            var listener1 = feed
+                .Subscribe(p => { Console.WriteLine("Listener 1:  Got a new " + p); });
+            await Task.Delay(TimeSpan.FromSeconds(7));
+
+            Console.WriteLine("Starting listener 2");
+            var listener2 = feed
+                .Subscribe(p => { Console.WriteLine("Listener 2:  Got a new " + p); });
+            await Task.Delay(TimeSpan.FromSeconds(7));
+
+            Console.WriteLine("Disposing listener 1");
+            listener1.Dispose();
+            //disposing cancels further updates, and our underlying listener will not longer listen either
+            //This is because we used RefCount to end our observable sequence when the last observer disconnects.
+
+            await Task.Delay(TimeSpan.FromSeconds(7));
+
+            //listen for data
+            Console.WriteLine("Starting listener 1 again");
+            listener1 = feed
+                .Subscribe(p => { System.Console.WriteLine("Listener 1 (2): " + p); });
 
             await Task.Delay(TimeSpan.FromSeconds(7));
 
             //disposing cancels further updates, and our underlying listener will not longer listen either
             //This is because we used RefCount to end our observable sequence when the last observer disconnects.
-            System.Console.WriteLine("Disposing subscription");
-            subscription.Dispose();
-
-            await Task.Delay(TimeSpan.FromSeconds(7));
-
-            //listen for data
-            subscription = feed
-                .Subscribe(p => { System.Console.WriteLine("Got a new2 " + p); });
-
-            await Task.Delay(TimeSpan.FromSeconds(7));
-
-            //disposing cancels further updates, and our underlying listener will not longer listen either
-            //This is because we used RefCount to end our observable sequence when the last observer disconnects.
-            System.Console.WriteLine("Disposing subscription");
-            subscription.Dispose();
+            Console.WriteLine("Disposing both listeners");
+            listener1.Dispose();
+            listener2.Dispose();
 
             await Task.Delay(TimeSpan.FromSeconds(6));
         }
 
-
         public static IObservable<int> CreateObservable()
         {
-            var tradeListener = new TradeListener();
+            var tradeListener = new TradeListener(); //this??
 
             //We use .Publish() to convert our subject into a connectable observable.
             //We use .RefCount() to automatically call .OnCompleted() to signal a sequence end.
-            var feed = tradeListener.DataFeed.Publish().RefCount();
+            var feed = tradeListener.DataFeed;
 
             //create an observable that is a subscription to our listener's observable
             var r = Observable
@@ -71,7 +76,9 @@ namespace ReactivePatterns
                     //stop once we receive end of the signal
                     tradeListener.Stop();
                     //stop would dispose any resources as needed
-                });
+                })
+                .Publish().RefCount()
+                ;
 
             //TODO: what happens when if need to dispose TradeListener? (then dispose underlying on stop(), alternatively ? how do we guarantee that tradeListener eventually gets garbage collected?)
             return r;
@@ -84,6 +91,11 @@ namespace ReactivePatterns
         /// </summary>
         internal class TradeListener
         {
+            public TradeListener()
+            {
+                Console.WriteLine("Underlying resource instantiated (should only happen once)...");
+            }
+
             /// <summary>
             /// When subscribed to, we will automatically start fetching data, and when we unsubscribe our data fetching will stop.
             /// </summary>
@@ -101,7 +113,7 @@ namespace ReactivePatterns
             /// </summary>
             public void Start()
             {
-                System.Console.WriteLine("Starting...");
+                Console.WriteLine("Starting underlying connection...");
 
                 _timer = Observable
                     .Interval(TimeSpan.FromSeconds(1))
@@ -117,7 +129,7 @@ namespace ReactivePatterns
                 _timer.Dispose();
 
                 //log it
-                System.Console.WriteLine("Stopped");
+                Console.WriteLine("Stopped underlying connection.");
             }
 
 
@@ -130,11 +142,11 @@ namespace ReactivePatterns
             /// <returns></returns>
             private async Task OnFetchLatestData()
             {
-                var newCounter = this._counter++;
+                var newCounter = _counter++;
 
-                System.Console.WriteLine("Fetching " + newCounter);
+                Console.WriteLine("Fetching " + newCounter);
                 await Task.Delay(2000); //simulate a delay
-                System.Console.WriteLine("Listener got " + newCounter);
+                Console.WriteLine("Fetched " + newCounter);
                 _latest.OnNext(newCounter); //push our new value out
             }
         }
