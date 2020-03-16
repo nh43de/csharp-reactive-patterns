@@ -13,7 +13,7 @@ namespace ReactivePatterns
         public static async Task Run()
         {
             Console.WriteLine("Starting program...");
-            var feed = CreateObservable();
+            var feed = CreateCachingObservable();
 
             await Task.Delay(TimeSpan.FromSeconds(3));
 
