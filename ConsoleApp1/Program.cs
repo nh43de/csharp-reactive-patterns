@@ -10,14 +10,21 @@ namespace ReactivePatterns
             typeof(Program).Bootstrap();
         }
 
+
+
         public static void Run_ObservableRefsCount()
         {
             ObservableRefsCount.Run().Wait();
         }
 
-        public static void Run_MultiAwait()
+        public static void Run_TaskCompletionSourceTest()
         {
             TaskCompletionSourceTest.Run().Wait();
+        }
+
+        public static void Run_ObservableRateLimiter()
+        {
+            ObservableRateLimiter.Run().Wait();
         }
     }
 }
